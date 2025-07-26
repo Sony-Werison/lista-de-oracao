@@ -5,7 +5,34 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { put, list } from '@vercel/blob';
-import type { AppData } from '../src/types';
+
+// Para evitar problemas de caminho no ambiente da Vercel, os tipos necessários
+// são definidos aqui. Mantenha-os em sincronia com src/types.ts.
+interface PrayerCardType {
+  id: string;
+  title: string;
+  description: string;
+  isAnswered: boolean;
+  createdAt: Date;
+  person?: string;
+}
+interface PrayerListType {
+  id: string;
+  title: string;
+  createdAt: Date;
+  cards: PrayerCardType[];
+  isCompleted: boolean;
+}
+interface ArchivedCardType extends PrayerCardType {
+  listId: string;
+  listTitle: string;
+  archivedAt: Date;
+}
+interface AppData {
+    prayerLists: PrayerListType[];
+    archivedCards: ArchivedCardType[];
+}
+
 
 export default async function handler(
   request: VercelRequest,
