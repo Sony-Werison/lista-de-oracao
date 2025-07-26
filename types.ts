@@ -38,3 +38,8 @@ export type ViewType = 'columns' | 'list' | 'graph' | 'person' | 'archive';
 export type Theme = 'light' | 'dark';
 
 export type SortKey = 'name' | 'count';
+
+export interface AppData {
+    prayerLists: PrayerListType[];
+    archivedCards: ArchivedCardType[];
+}
