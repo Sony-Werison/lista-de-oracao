@@ -54,15 +54,20 @@ export const loadData = async (): Promise<AppData> => {
 export const saveData = async (data: AppData): Promise<void> => {
     console.log("ApiService: Salvando dados no backend Vercel...");
     try {
-        await fetch('/api/data', {
+        const response = await fetch('/api/data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
         });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error(`Falha ao salvar dados no backend. Status: ${response.status}`, errorBody);
+        }
     } catch (e) {
-        console.error("Falha ao salvar dados no backend:", e);
+        console.error("Falha de rede ao salvar dados no backend:", e);
         // A falha aqui é tratada silenciosamente para não interromper a UX,
         // mas em um app de produção, seria bom ter um sistema de retry ou notificação.
     }
