@@ -1,12 +1,4 @@
-import { PrayerListType, ArchivedCardType } from '../types';
-
-// Esta interface define a forma dos dados que seu backend irá gerenciar.
-export interface AppData {
-    prayerLists: PrayerListType[];
-    archivedCards: ArchivedCardType[];
-}
-
-const MOCK_STORAGE_KEY = 'prayer-journal-backend-mock-v1';
+import { PrayerListType, ArchivedCardType, AppData } from '../types';
 
 // --- Helper para converter strings de data do JSON para objetos Date ---
 const parseDates = (data: AppData): AppData => {
@@ -33,50 +25,45 @@ const parseDates = (data: AppData): AppData => {
 
 
 /**
- * Carrega os dados da aplicação.
- *
- * NOTA PARA O DESENVOLVEDOR:
- * Esta é uma implementação MOCK usando localStorage para permitir que o app funcione sem um backend real.
- * Para conectar ao seu backend, substitua a lógica nesta função por uma chamada `fetch` ao seu endpoint GET.
+ * Carrega os dados da aplicação a partir do backend da Vercel.
  *
  * @returns Uma promessa que resolve com os dados da aplicação.
  */
 export const loadData = async (): Promise<AppData> => {
-    console.log("ApiService: Carregando dados (mock com localStorage)");
-    // Simula um atraso de rede para uma experiência mais realista
-    await new Promise(resolve => setTimeout(resolve, 500));
-
+    console.log("ApiService: Carregando dados do backend Vercel...");
     try {
-        const rawData = localStorage.getItem(MOCK_STORAGE_KEY);
-        if (!rawData) {
-            return { prayerLists: [], archivedCards: [] };
+        const response = await fetch('/api/data');
+        if (!response.ok) {
+            throw new Error(`A requisição da API falhou com status ${response.status}`);
         }
-        const data = JSON.parse(rawData);
+        const data = await response.json();
         return parseDates(data);
     } catch (e) {
-        console.error("Falha ao carregar dados mockados do localStorage", e);
+        console.error("Falha ao carregar dados do backend:", e);
+        // Retorna um estado vazio em caso de erro para não quebrar a aplicação
         return { prayerLists: [], archivedCards: [] };
     }
 };
 
 /**
- * Salva os dados da aplicação.
- *
- * NOTA PARA O DESENVOLVEDOR:
- * Esta é uma implementação MOCK usando localStorage.
- * Para conectar ao seu backend, substitua a lógica nesta função por uma chamada `fetch`
- * para o seu endpoint POST/PUT, enviando o objeto `data` no corpo da requisição.
+ * Salva os dados da aplicação no backend da Vercel.
  *
  * @param data Os dados completos da aplicação para salvar.
  * @returns Uma promessa que resolve quando a operação de salvar for concluída.
  */
 export const saveData = async (data: AppData): Promise<void> => {
-    console.log("ApiService: Salvando dados (mock com localStorage)");
-
+    console.log("ApiService: Salvando dados no backend Vercel...");
     try {
-        const storableData = JSON.stringify(data);
-        localStorage.setItem(MOCK_STORAGE_KEY, storableData);
+        await fetch('/api/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
     } catch (e) {
-        console.error("Falha ao salvar dados mockados no localStorage", e);
+        console.error("Falha ao salvar dados no backend:", e);
+        // A falha aqui é tratada silenciosamente para não interromper a UX,
+        // mas em um app de produção, seria bom ter um sistema de retry ou notificação.
     }
 };
